@@ -17,9 +17,14 @@ class EventViewModel {
     var error: Error?
     private let favouritesKey = "favouriteEventIDs"
     private let searchKey = "searchTitle"
-
+    var favouritesDict: [String: Event] = [:]
+    
     private let service = EventService()
-
+    
+    init() {
+        loadFavouritesDict()
+    }
+    
     func loadEvents(for city: String) {
         isLoading = true
         error = nil
@@ -54,18 +59,28 @@ class EventViewModel {
     }
     
     func toggleFavourite(for event: Event) {
-            if let index = events.firstIndex(where: { $0.id == event.id }) {
+        guard let eventId = event.id else { return }
+        if events.firstIndex(where: { $0.id == eventId }) != nil {
+            if let index = events.firstIndex(where: { $0.id == eventId }) {
                 events[index].isFavourite.toggle()
-                updateFavouriteIDs(eventID: event.id ?? "", isFavourite: events[index].isFavourite)
+                let isFav = events[index].isFavourite
+                updateFavouriteIDs(eventID: eventId, isFavourite: isFav)
+                if isFav {
+                    favouritesDict[eventId] = events[index]
+                } else {
+                    favouritesDict.removeValue(forKey: eventId)
+                }
             }
         }
-
-    var favouritedEvents: [Event] {
-        events.filter { $0.isFavourite }
     }
+    
+    var favouritedEvents: [Event] {
+        return Array(favouritesDict.values)
+    }
+    
     private func updateFavouriteIDs(eventID: String, isFavourite: Bool) {
         var favourites = UserDefaults.standard.stringArray(forKey: favouritesKey) ?? []
-
+        
         if isFavourite {
             if !favourites.contains(eventID) {
                 favourites.append(eventID)
@@ -73,32 +88,51 @@ class EventViewModel {
         } else {
             favourites.removeAll { $0 == eventID }
         }
-
+        
         UserDefaults.standard.set(favourites, forKey: favouritesKey)
+        saveFavouritesDict() // Save whole favorite events to disk (optional)
     }
+    
     func applySavedFavourites() {
         let savedIDs = UserDefaults.standard.stringArray(forKey: favouritesKey) ?? []
-
         for index in events.indices {
             if let id = events[index].id {
                 events[index].isFavourite = savedIDs.contains(id)
+                if events[index].isFavourite {
+                    favouritesDict[id] = events[index]
+                }
             }
         }
     }
+    
+    // Add serialization to save/load favouritesDict if needed
+    func saveFavouritesDict() {
+        if let data = try? JSONEncoder().encode(favouritesDict) {
+            UserDefaults.standard.set(data, forKey: "favouritesDict")
+        }
+    }
+    
+    func loadFavouritesDict() {
+        if let data = UserDefaults.standard.data(forKey: "favouritesDict"),
+           let dict = try? JSONDecoder().decode([String: Event].self, from: data) {
+            favouritesDict = dict
+        }
+    }
+    
     func saveLastSearch(cityName: String?) {
         let lastSearch = LastSearch(cityName: cityName, latitude: nil, longitude: nil)
         if let data = try? JSONEncoder().encode(lastSearch) {
             UserDefaults.standard.set(data, forKey: "lastSearch")
         }
     }
-
+    
     func saveLastSearch(coordinate: CLLocationCoordinate2D) {
         let lastSearch = LastSearch(cityName: nil, latitude: coordinate.latitude, longitude: coordinate.longitude)
         if let data = try? JSONEncoder().encode(lastSearch) {
             UserDefaults.standard.set(data, forKey: "lastSearch")
         }
     }
-
+    
     func getLastSearch() -> LastSearch? {
         guard let data = UserDefaults.standard.data(forKey: "lastSearch") else { return nil }
         return try? JSONDecoder().decode(LastSearch.self, from: data)
@@ -112,11 +146,8 @@ class EventViewModel {
         }
         return key
     }
-
-
-
-    
 }
+
 
 extension EventViewModel {
     func loadEvents(for coordinate: CLLocationCoordinate2D) {

@@ -9,7 +9,7 @@
 import SwiftUI
 
 struct EventCardView: View {
-    let event: Event
+    @Binding var event: Event
     @State var imageURL: URL?
     @Bindable var viewModel: EventViewModel
 

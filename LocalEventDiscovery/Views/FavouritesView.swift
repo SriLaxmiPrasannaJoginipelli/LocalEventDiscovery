@@ -10,18 +10,19 @@ import SwiftUI
 struct FavouritesView: View {
     @State var isFavourite : Bool?
     @Bindable var viewModel : EventViewModel
+    @State private var displayedFavourites: [Event] = []
     var body: some View {
         NavigationStack{
             List{
                 if(viewModel.favouritedEvents.isEmpty){
                     EmptyFavouriteCardView()
                 }
-                ForEach(viewModel.favouritedEvents, id: \.id) { event in
+                ForEach(displayedFavourites, id: \.id) { event in
                     Text(event.name ?? "No event name found")
                         .font(.headline)
                 }
                 .onDelete { IndexSet in
-                    unfavourite(at: IndexSet)
+                    deleteItems(at: IndexSet)
                 }
                 
             }
@@ -31,17 +32,23 @@ struct FavouritesView: View {
             }
             .onAppear{
                 viewModel.applySavedFavourites()
+                displayedFavourites = viewModel.favouritedEvents
             }
         }
     }
     private func unfavourite(at offsets: IndexSet) {
             for index in offsets {
-                let eventToUnfavourite = viewModel.favouritedEvents[index]
-                if let i = viewModel.events.firstIndex(where: { $0.id == eventToUnfavourite.id }) {
+                let event = displayedFavourites[index]
+
+                // Update EventViewModel
+                if let i = viewModel.events.firstIndex(where: { $0.id == event.id }) {
                     viewModel.events[i].isFavourite = false
-                    removeFromSavedFavourites(id: eventToUnfavourite.id)
+                    removeFromSavedFavourites(id: event.id)
                 }
             }
+
+            // Remove from local source to keep SwiftUI's List consistent
+            displayedFavourites.remove(atOffsets: offsets)
         }
 
         private func removeFromSavedFavourites(id: String?) {
@@ -51,7 +58,21 @@ struct FavouritesView: View {
             UserDefaults.standard.set(saved, forKey: "favouriteEventIDs")
         }
     
-    
+    private func deleteItems(at offsets: IndexSet) {
+        let eventsToUnfavourite = offsets.compactMap { index in
+            displayedFavourites.indices.contains(index) ? displayedFavourites[index] : nil
+        }
+
+        // Update persistent store and in-memory dictionary
+        for event in eventsToUnfavourite {
+            removeFromSavedFavourites(id: event.id)
+            viewModel.favouritesDict[event.id ?? ""] = nil
+            viewModel.toggleFavourite(for: event) // if this handles isFavourite flag
+        }
+
+        // Update UI
+        displayedFavourites.remove(atOffsets: offsets)
+    }
 
 }
 

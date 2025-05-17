@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct MainTabView: View {
-    @State private var viewModel = EventViewModel()
+    @State var viewModel : EventViewModel
     var body: some View {
         TabView {
             EventsListView(viewModel: viewModel)

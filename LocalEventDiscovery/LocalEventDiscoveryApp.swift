@@ -9,10 +9,11 @@ import SwiftUI
 
 @main
 struct LocalEventDiscoveryApp: App {
+    @State private var viewModel = EventViewModel()
     
     var body: some Scene {
         WindowGroup {
-            MainTabView()
+            MainTabView(viewModel: viewModel)
                 
         }
     }
