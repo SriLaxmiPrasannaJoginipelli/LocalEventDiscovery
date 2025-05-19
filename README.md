@@ -20,9 +20,9 @@ Discover local events effortlessly with a beautifully crafted SwiftUI app.
 
 | Home | Detail | Favorites |
 |------|--------|-----------|
-| ![Home](![image](https://github.com/user-attachments/assets/45e5c52c-afc9-4cc6-929e-5f1dcb3f3090)
-) | ![Detail](![image](https://github.com/user-attachments/assets/a7b2f3f8-5315-4091-8b7f-f9a284e6b035)
-) | ![Favorites](![image](https://github.com/user-attachments/assets/cc819fbe-fb05-4368-997a-f522fd52cc08)
+| (![image](https://github.com/user-attachments/assets/45e5c52c-afc9-4cc6-929e-5f1dcb3f3090)
+) | (![image](https://github.com/user-attachments/assets/a7b2f3f8-5315-4091-8b7f-f9a284e6b035)
+) | (![image](https://github.com/user-attachments/assets/cc819fbe-fb05-4368-997a-f522fd52cc08)
 ) |
 
 ---
