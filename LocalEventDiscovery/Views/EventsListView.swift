@@ -106,19 +106,20 @@ struct EventsListView: View {
                 emptyStateView
             } else {
                 ScrollView {
-                    LazyVStack(spacing: 20) {
+                    LazyVStack(spacing: 12) {
                         ForEach($viewModel.events, id: \.id) { $event in
                             NavigationLink {
-                                EventDetailView(event: event, viewModel: viewModel)
+                                EventDetailView(event: $event, viewModel: viewModel)
                             } label: {
                                 EventCardView(event: $event, imageURL: bestImageURL(from: event.images), viewModel: viewModel)
                             }
                         }
-
                     }
                     .padding(.top, 8)
+                    .padding(.horizontal)
                     .padding(.bottom, 24)
                 }
+
             }
         }
     }

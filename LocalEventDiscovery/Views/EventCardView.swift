@@ -14,150 +14,62 @@ struct EventCardView: View {
     @Bindable var viewModel: EventViewModel
 
     var body: some View {
-        ZStack {
-            // Animated Background behind content only
-            CustomCircleView()
-                .offset(y: -60)
-                .zIndex(0)
-
-            VStack(spacing: 16) {
-                imageSection
-                    .zIndex(1)
-
-                VStack(alignment: .leading, spacing: 8) {
-                    Text(event.name ?? "Event")
-                        .font(.title2.bold())
-                        .foregroundStyle(
-                            LinearGradient(
-                                colors: [.white, .cyan],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
-
-                    if let type = event.type {
-                        Label(type.capitalized, systemImage: "tag")
-                            .font(.subheadline)
-                            .foregroundColor(.white)
-                    }
-
-                    if let genre = event.classifications.first?.genre?.name {
-                        Label(genre, systemImage: "ticket")
-                            .font(.subheadline)
-                            .foregroundColor(.white)
-                    }
-
-                    if let url = event.url {
-                        HStack {
-                            Image(systemName: "link")
-                            Text("More info")
-                                .underline()
-                        }
-                        .font(.subheadline)
-                        .foregroundColor(.white)
-                        .onTapGesture {
-                            if let url = URL(string: url) {
-                                UIApplication.shared.open(url)
-                            }
-                        }
-                    }
-                }
-                .padding(.horizontal)
-                .zIndex(1)
-
-                Spacer()
-
-                HStack {
-                    Button {
-                        viewModel.toggleFavourite(for: event)
-                    } label: {
-                        Image(systemName: event.isFavourite ? "heart.fill" : "heart")
-                            .font(.title2)
-                            .foregroundColor(event.isFavourite ? .red : .white)
-                            .padding(12)
-                            .background(Circle().fill(.ultraThinMaterial))
-                    }
-
-                    Spacer()
-
-                    if let url = URL(string: event.url ?? "") {
-                        ShareLink(item: url) {
-                            Image(systemName: "square.and.arrow.up")
-                                .font(.title2)
-                                .foregroundColor(.white)
-                                .padding(12)
-                                .background(Circle().fill(.ultraThinMaterial))
-                        }
-                    }
-                }
-                .padding(.horizontal)
-                .zIndex(1)
-            }
-            .padding()
-        }
-        .frame(width: 340, height: 500)
-        .background(
-            RoundedRectangle(cornerRadius: 30)
-                .fill(Color.black.opacity(0.6))
-                .blur(radius: 0.5)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 30)
-                .stroke(Color.white.opacity(0.15), lineWidth: 1)
-        )
-        .cornerRadius(30)
-        .shadow(radius: 10)
-    }
-
-    private var imageSection: some View {
-        ZStack {
+        HStack(spacing: 16) {
             AsyncImage(url: imageURL) { phase in
                 switch phase {
                 case .empty:
                     ProgressView()
-                        .frame(height: 180)
+                        .frame(width: 80, height: 80)
+                        .background(Color.gray.opacity(0.2))
+                        .cornerRadius(10)
                 case .success(let image):
                     image
                         .resizable()
                         .scaledToFill()
-                        .frame(height: 180)
+                        .frame(width: 80, height: 80)
                         .clipped()
-                        .cornerRadius(20)
+                        .cornerRadius(10)
                 case .failure:
                     Image(systemName: "photo")
                         .resizable()
                         .scaledToFit()
-                        .frame(height: 180)
-                        .padding(30)
-                        .foregroundColor(.white.opacity(0.5))
+                        .frame(width: 80, height: 80)
+                        .padding(10)
+                        .background(Color.gray.opacity(0.2))
+                        .cornerRadius(10)
                 @unknown default:
                     EmptyView()
                 }
             }
-        }
-    }
-}
 
-struct CustomCircleView: View {
-    @State private var isAnimated = false
+            VStack(alignment: .leading, spacing: 6) {
+                Text(event.name ?? "Untitled Event")
+                    .font(.headline)
+                    .foregroundColor(.primary)
+                    .lineLimit(2)
 
-    var body: some View {
-        Circle()
-            .fill(
-                LinearGradient(
-                    colors: [Color.indigo.opacity(0.4), Color.pink.opacity(0.4)],
-                    startPoint: isAnimated ? .topLeading : .bottomLeading,
-                    endPoint: isAnimated ? .bottomTrailing : .topTrailing
-                )
-            )
-            .scaleEffect(isAnimated ? 1.05 : 0.95)
-            .onAppear {
-                withAnimation(.easeInOut(duration: 4.0).repeatForever(autoreverses: true)) {
-                    isAnimated.toggle()
+                if let type = event.type {
+                    Text(type.capitalized)
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                }
+
+                if let genre = event.classifications.first?.genre?.name {
+                    Text(genre)
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
                 }
             }
-            .frame(width: 360, height: 360)
-            .blur(radius: 40)
-            .opacity(0.4)
+
+            Spacer()
+
+            Image(systemName: "chevron.right")
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundColor(.gray)
+        }
+        .padding()
+        .background(Color(.systemBackground))
+        .cornerRadius(15)
+        .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 2)
     }
 }

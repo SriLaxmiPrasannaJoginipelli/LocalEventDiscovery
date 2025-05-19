@@ -12,29 +12,55 @@ struct FavouritesView: View {
     @Bindable var viewModel : EventViewModel
     @State private var displayedFavourites: [Event] = []
     var body: some View {
-        NavigationStack{
-            List{
-                if(viewModel.favouritedEvents.isEmpty){
+        
+        NavigationStack {
+            ZStack {
+                // Background
+                LinearGradient(
+                    colors: [.indigo.opacity(0.4), .purple.opacity(0.3)],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+                .ignoresSafeArea()
+
+                if viewModel.favouritedEvents.isEmpty {
                     EmptyFavouriteCardView()
+                    
+                } else {
+                    List {
+                        ForEach($displayedFavourites, id: \.id) { $event in
+                            NavigationLink {
+                                EventDetailView(event: $event, viewModel: viewModel)
+                            } label: {
+                                HStack {
+                                    Image(systemName: "star.fill")
+                                        .foregroundColor(.yellow)
+                                    Text(event.name ?? "Unnamed Event")
+                                        .font(.headline)
+                                }
+                                .padding(.vertical, 4)
+                            }
+                        }
+                        .onDelete { indexSet in
+                            deleteItems(at: indexSet)
+                        }
+                    }
+                    .scrollContentBackground(.hidden)
                 }
-                ForEach(displayedFavourites, id: \.id) { event in
-                    Text(event.name ?? "No event name found")
-                        .font(.headline)
-                }
-                .onDelete { IndexSet in
-                    deleteItems(at: IndexSet)
-                }
-                
             }
+            .navigationTitle("❤️ Your Favourites")
+            .navigationBarTitleDisplayMode(.large)
             .toolbar {
-                EditButton()
-                    .disabled(viewModel.favouritedEvents.isEmpty)
+                if !viewModel.favouritedEvents.isEmpty {
+                    EditButton()
+                }
             }
-            .onAppear{
+            .onAppear {
                 viewModel.applySavedFavourites()
                 displayedFavourites = viewModel.favouritedEvents
             }
         }
+
     }
     private func unfavourite(at offsets: IndexSet) {
             for index in offsets {
